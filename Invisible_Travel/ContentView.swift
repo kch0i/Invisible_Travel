@@ -18,6 +18,7 @@ struct ContentView: View {
                     SettingRow(icon: "battery.50", title: "Device Information")
                     SettingRow(icon: "sun.max.circle", title: "Weather Information")
                     SettingRow(icon: "textformat.size", title: "Colour Filter")
+                    SettingRow(icon: "globe", title: "Lang")
                 }
             
             }
