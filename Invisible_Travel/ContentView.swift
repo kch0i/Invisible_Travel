@@ -16,9 +16,10 @@ struct ContentView: View {
                     SettingRow(icon: "globe", title: "Language / 語言", detail: "English")
                     SettingRow(icon: "location.fill", title: "Travel Guide")
                     SettingRow(icon: "battery.50", title: "Device Information")
-                    SettingRow(icon: "sun.max.circle", title: "Weather Information")
+                    SettingRow(icon: "wifi", title: "Device Connection")
+                    SettingRow(icon: "headphones", title: "Headphone Connection")
+                    SettingRow(icon: "sun.max", title: "Weather Information")
                     SettingRow(icon: "textformat.size", title: "Colour Filter")
-                    SettingRow(icon: "globe", title: "Lang")
                 }
             
             }
