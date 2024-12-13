@@ -13,5 +13,7 @@ struct Invisible_TravelApp: App {
         WindowGroup {
             ContentView()
         }
+        
+        
     }
 }
