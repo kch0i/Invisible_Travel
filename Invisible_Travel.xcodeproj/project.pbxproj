@@ -6,10 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		4AE99EFF2D0A9D2700D9560C /* LanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AE99EFE2D0A9D2700D9560C /* LanguageManager.swift */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		4A274CB32D08813A00EC1990 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -31,7 +27,6 @@
 		4A274CA22D08813900EC1990 /* Invisible_Travel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Invisible_Travel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A274CB22D08813A00EC1990 /* Invisible_TravelTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Invisible_TravelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A274CBC2D08813A00EC1990 /* Invisible_TravelUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Invisible_TravelUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		4AE99EFE2D0A9D2700D9560C /* LanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -80,7 +75,6 @@
 		4A274C992D08813900EC1990 = {
 			isa = PBXGroup;
 			children = (
-				4AE99EFE2D0A9D2700D9560C /* LanguageManager.swift */,
 				4A274CA42D08813900EC1990 /* Invisible_Travel */,
 				4A274CB52D08813A00EC1990 /* Invisible_TravelTests */,
 				4A274CBF2D08813A00EC1990 /* Invisible_TravelUITests */,
@@ -242,7 +236,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4AE99EFF2D0A9D2700D9560C /* LanguageManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -14,9 +14,11 @@ struct ContentView: View {
             List {
 
                 Section {
+                    /*
                     NavigationLink(destination: LanguageSettingsView()) {
                         SettingRow(icon: "globe", title: "Language / 語言", detail: "English")
                                         }
+                    */
                     NavigationLink(destination: TravelGuideView()) {
                         SettingRow(icon: "location.fill", title: "Travel Guide")
                                         }
@@ -64,6 +66,8 @@ struct SettingRow: View {
             Text(title)
                 .font(.title2)
                 .foregroundColor(.primary)
+                .lineLimit(nil)
+                .padding(.leading)
             
             Spacer()
             
@@ -82,69 +86,7 @@ struct SettingRow: View {
     }
 }
 
-struct LanguageSettingsView: View {
-    var body: some View {
-        
-       
-        
-        
-        Text("Language Settings")
-            .font(.largeTitle)
-            .navigationTitle("Language Settings")
-    }
-}
-struct TravelGuideView: View {
-        @State private var region = MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 25.033968, longitude: 121.564468),
-            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-        )
-        
-    var body: some View {
-        Text("Travel Guide Details")
-            .font(.largeTitle)
-            .navigationTitle("Travel Guide")
-        }
-    }
 
-struct DeviceInfoView: View {
-    var body: some View {
-        Text("Device Information")
-            .font(.largeTitle)
-            .navigationTitle("Device Information")
-    }
-}
-
-struct DeviceConnectionView: View {
-    var body: some View {
-        Text("Device Connection Details")
-            .font(.largeTitle)
-            .navigationTitle("Device Connection")
-    }
-}
-
-struct HeadphoneConnectionView: View {
-    var body: some View {
-        Text("Headphone Connection Details")
-            .font(.largeTitle)
-            .navigationTitle("Headphone Connection")
-    }
-}
-
-struct WeatherInfoView: View {
-    var body: some View {
-        Text("Weather Information Details")
-            .font(.largeTitle)
-            .navigationTitle("Weather Information")
-    }
-}
-
-struct ColourFilterView: View {
-    var body: some View {
-        Text("Colour Filter Settings")
-            .font(.largeTitle)
-            .navigationTitle("Colour Filter")
-    }
-}
     #Preview {
         ContentView()
     }
