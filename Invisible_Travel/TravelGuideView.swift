@@ -8,6 +8,22 @@
 
 import SwiftUI
 import MapKit
+import CoreLocation
+
+// 在檔案頂部添加座標擴展
+extension CLLocationCoordinate2D: @retroactive Equatable {
+    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
+        return lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude
+    }
+}
+
+extension MKMapItem: @retroactive Identifiable {
+    public var id: String {
+        "\(self.placemark.coordinate.latitude)-\(self.placemark.coordinate.longitude)"
+    }
+}
+
+
 
 struct TravelGuideView: View {
     @StateObject private var locationManager = LocationManager()
@@ -44,29 +60,31 @@ struct TravelGuideView: View {
         .onChange(of: destinationCoordinate) { newValue in
             calculateRoute() // 當目的地座標變化時觸發路線計算
         }
+        
+
+        }
+        
+        
     }
-}
+
 
 
 private func calculateRoute() {
-    guard let userLocation = locationManager.locationManager.location,
-          let destination = destinationCoordinate else { return }
-    
-    let request = MKDirections.Request()
-    request.source = MKMapItem(placemark: MKPlacemark(coordinate: userLocation.coordinate))
-    request.destination = MKMapItem(placemark: MKPlacemark(coordinate: destination))
-    request.transportType = .walking  // 步行模式
-    
-    let directions = MKDirections(request: request)
-    directions.calculate { response, error in
-        guard let route = response?.routes.first else { return }
-        self.directions = route.steps.map { $0.instructions }.filter { !$0.isEmpty }
-        self.showRoute = true
+        guard let userLocation = locationManager.locationManager.location,
+              let destination = destinationCoordinate else { return }
         
-        // 無障礙功能：語音提示開始導航
-        UIAccessibility.post(notification: .announcement, argument: "路線規劃完成，共\(route.steps.count)個步驟")
+        let request = MKDirections.Request()
+        request.source = MKMapItem(placemark: MKPlacemark(coordinate: userLocation.coordinate))
+        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: destination))
+        request.transportType = .walking
+        
+        let directions = MKDirections(request: request)
+        directions.calculate { response, error in
+            guard let route = response?.routes.first else { return }
+            self.directions = route.steps.map { $0.instructions }.filter { !$0.isEmpty }
+            self.showRoute = true
+        }
     }
-}
 
 
 
