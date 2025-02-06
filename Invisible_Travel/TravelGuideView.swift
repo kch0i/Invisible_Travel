@@ -38,7 +38,9 @@ struct TravelGuideView: View {
                 interactionModes: .all,
                 showsUserLocation: true,
                 userTrackingMode: .constant(.follow),
-                annotationItems: destinationCoordinate != nil ? [AnnotationItem(coordinate: destinationCoordinate!)] : [])
+                annotationItems: destinationCoordinate != nil ? [AnnotationItem(coordinate: destinationCoordinate!)] : []
+                userTrackingMode: .constant(locationManager.isTracking ? .follow : .none)
+            )
             { item in
                 MapMarker(coordinate: item.coordinate, tint: .red)
             }
@@ -60,31 +62,35 @@ struct TravelGuideView: View {
         .onChange(of: destinationCoordinate) { newValue in
             calculateRoute() // 當目的地座標變化時觸發路線計算
         }
-        
-
-        }
-        
-        
     }
-
-
-
-private func calculateRoute() {
-        guard let userLocation = locationManager.locationManager.location,
+    private func calculateRoute() {
+        guard let userLocation = locationManager.location?.coordinate,
               let destination = destinationCoordinate else { return }
-        
+            
         let request = MKDirections.Request()
-        request.source = MKMapItem(placemark: MKPlacemark(coordinate: userLocation.coordinate))
+        request.source = MKMapItem(placemark: MKPlacemark(coordinate: userLocation))
         request.destination = MKMapItem(placemark: MKPlacemark(coordinate: destination))
         request.transportType = .walking
         
         let directions = MKDirections(request: request)
-        directions.calculate { response, error in
-            guard let route = response?.routes.first else { return }
-            self.directions = route.steps.map { $0.instructions }.filter { !$0.isEmpty }
-            self.showRoute = true
+        directions.calculate { [weak self] response, error in
+            guard let self = self else { return }
+            // 確保在主線程更新UI
+            if let error = error {
+                        print("Route calculation error: \(error.localizedDescription)")
+                        return
+                    }
+            DispatchQueue.main.async {
+                self.directions = route.steps.compactMap { $0.instructions?.isEmpty == false ? $0.instructions : nil }
+                self.showRoute = true
+            }
         }
     }
+}
+
+
+
+
 
 
 
@@ -94,6 +100,7 @@ struct AnnotationItem: Identifiable {
 }
 
 struct SearchBarView: View {
+    @EnvironmentObject var locationManager: LocationManager // 注入环境对象
     var onLocationSelected: (CLLocationCoordinate2D) -> Void
     
     @State private var searchText = ""
@@ -125,53 +132,51 @@ struct SearchBarView: View {
     private func searchLocations() {
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = searchText
-        request.region = MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 25.033968, longitude: 121.564468),
-            span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
-        )
-        
+        request.region = locationManager.region // 使用当前定位区域
         MKLocalSearch(request: request).start { response, _ in
-            searchResults = response?.mapItems ?? []
-        }
-    }
-}
-
-
-
-struct NavigationInstructionsView: View {
-    @Binding var directions: [String]
-    
-    var body: some View {
-        VStack(alignment: .leading) {
-            Text("導航指示")
-                .font(.headline)
-                .padding()
-            
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    ForEach(directions, id: \.self) { instruction in
-                        HStack {
-                            Image(systemName: "arrow.turn.up.right")
-                                .accessibilityHidden(true)
-                            Text(instruction)
-                                .font(.body)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(8)
-                        .accessibilityElement(children: .combine)
-                        .accessibilityHint("導航步驟")
-                    }
-                }
-                .padding(.horizontal)
+            DispatchQueue.main.async { // 确保主线程更新
+                searchResults = response?.mapItems ?? []
             }
         }
-        .background(Color.white.opacity(0.9))
-        .cornerRadius(12)
-        .shadow(radius: 5)
-        .padding()
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("導航指示清單，共\(directions.count)個步驟")
+    }
+    
+    
+    
+    struct NavigationInstructionsView: View {
+        @Binding var directions: [String]
+        
+        var body: some View {
+            VStack(alignment: .leading) {
+                Text("導航指示")
+                    .font(.headline)
+                    .padding()
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        ForEach(directions, id: \.self) { instruction in
+                            HStack {
+                                Image(systemName: "arrow.turn.up.right")
+                                    .accessibilityHidden(true)
+                                Text(instruction)
+                                    .font(.body)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .padding()
+                            .background(Color(.systemGray6))
+                            .cornerRadius(8)
+                            .accessibilityElement(children: .combine)
+                            .accessibilityHint("導航步驟")
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+            }
+            .background(Color.white.opacity(0.9))
+            .cornerRadius(12)
+            .shadow(radius: 5)
+            .padding()
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("導航指示清單，共\(directions.count)個步驟")
+        }
     }
 }

@@ -87,7 +87,8 @@ struct SettingRow: View {
 }
 
 
-    #Preview {
-        ContentView()
-    }
+#Preview {
+    ContentView()
+        .environmentObject(LocationManager()) // 补充环境对象注入
+}
 
