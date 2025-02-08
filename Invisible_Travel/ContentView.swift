@@ -19,7 +19,7 @@ struct ContentView: View {
                         SettingRow(icon: "globe", title: "Language / 語言", detail: "English")
                                         }
                     */
-                    NavigationLink(destination: TravelGuideView()) {
+                    NavigationLink(destination: Mapping()) {
                         SettingRow(icon: "location.fill", title: "Travel Guide")
                                         }
                     NavigationLink(destination: DeviceInfoView()) {
@@ -33,9 +33,6 @@ struct ContentView: View {
                                         }
                     NavigationLink(destination: WeatherInfoView()) {
                         SettingRow(icon: "sun.max", title: "Weather Information")
-                                        }
-                    NavigationLink(destination: ColourFilterView()) {
-                        SettingRow(icon: "textformat.size", title: "Colour Filter")
                                         }
                 }
             
@@ -89,6 +86,5 @@ struct SettingRow: View {
 
 #Preview {
     ContentView()
-        .environmentObject(LocationManager()) // 补充环境对象注入
-}
+    }
 
