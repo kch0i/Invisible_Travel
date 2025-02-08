@@ -30,7 +30,7 @@ struct Mapping: View {
                         Image(systemName: "mappin")
                             .foregroundStyle(.blue)
                             .onTapGesture {
-                                print("選擇了：\(item.name ?? "")")
+                                print("you have choose：\(item.name ?? "")")
                             }
                     }
                 }
@@ -75,3 +75,17 @@ struct SearchBar: View {
     }
 }
 
+class RouateManager: ObservableObject {
+    @Published var route: MKRoute?
+    
+    func calculateRoute(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) {
+        let request = MKDirections.Request()
+        request.source = MKMapItem(placemark: MKPlacemark(coordinate: from))
+        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: to))
+        request.transportType = .automobile
+        
+        MKDirections(request: request).calculate { [weak self] response, _ in
+            self?.route = response?.routes.first
+        }
+    }
+}
