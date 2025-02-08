@@ -30,13 +30,14 @@ struct TravelGuideView: View {
     var body: some View {
         ZStack {
             Map(
-                coordinateRegion: $locationManager.region,
-                interactionModes: .all,
-                showsUserLocation: true,
-                userTrackingMode: .constant(.follow),
-                annotationItems: destinationCoordinate != nil ? [AnnotationItem(coordinate: destinationCoordinate!)] : []
-            ) { item in
-                MapMarker(coordinate: item.coordinate, tint: .red)
+                initialPosition: .region(locationManager.region),
+                interactionModes: .all
+            ) {
+                UserAnnotation() // 顯示使用者位置圖標
+                if let destinationCoordinate {
+                    Marker("目的地", coordinate: destinationCoordinate)
+                        .tint(.red)
+                }
             }
             
             VStack {
@@ -65,9 +66,9 @@ struct TravelGuideView: View {
         request.source = MKMapItem(placemark: MKPlacemark(coordinate: userLocation))
         request.destination = MKMapItem(placemark: MKPlacemark(coordinate: destination))
         request.transportType = .walking
-        
+        	
         let directions = MKDirections(request: request)
-        directions.calculate { [weak self] response, error in
+        directions.calculate { response, error in
             guard let self = self else { return }
             
             if let error = error {
@@ -77,15 +78,17 @@ struct TravelGuideView: View {
             
             guard let route = response?.routes.first else { return }
             
-            DispatchQueue.main.async {
-                self.directions = route.steps.compactMap {
-                    $0.instructions?.isEmpty == false ? $0.instructions : nil
+            self.directions = route.steps.compactMap {
+                guard let instructions = $0.instructions, !instructions.isEmpty else {
+                    return nil
                 }
+                return instructions
+            }
                 self.showRoute = true
             }
         }
     }
-}
+
 
 struct AnnotationItem: Identifiable {
     let id = UUID()
