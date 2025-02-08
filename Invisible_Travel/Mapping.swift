@@ -12,17 +12,31 @@ import MapKit
 
 struct Mapping: View {
     @State private var position = MapCameraPosition.automatic
-    @State private var visibleRegion: MKCoordinateRegion?
+    @State private var searchText = ""
+    @State private var searchResults = [MKMapItem]()
     
     var body: some View {
-
-        
-        Map(position: $position) {
-            UserAnnotation()
-        }
-        .mapStyle(.standard)
-        .onMapCameraChange { context in
-            visibleRegion = context.region
+        VStack(spacing: 0) {
+            SearchBar(searchText: $searchText, results: $searchResults)
+                .padding()
+                .background(.bar)
+            
+            Map(position: $position) {
+                UserAnnotation()
+                
+                // 顯示所有搜索結果標記
+                ForEach(searchResults, id: \.self) { item in
+                    Annotation(item.name ?? "", coordinate: item.placemark.coordinate) {
+                        Image(systemName: "mappin")
+                            .foregroundStyle(.blue)
+                            .onTapGesture {
+                                print("選擇了：\(item.name ?? "")")
+                            }
+                    }
+                }
+            }
+            .mapStyle(.standard)
+            .frame(maxHeight: .infinity)
         }
     }
 }
@@ -38,9 +52,9 @@ struct SearchBar: View {
         VStack {
             TextField("Search", text: $searchText)
                 .textFieldStyle(.roundedBorder)
-                .onSubmit { performSearch(query: searchText, options: []) }
+                .onSubmit { performSearch() }
             
-            List(results) { item in
+            List(results, id: \.self) { item in
                 VStack(alignment: .leading) {
                     Text(item.name ?? "unknown location")
                     Text(item.placemark.title ?? "")
@@ -49,4 +63,15 @@ struct SearchBar: View {
             }
         }
     }
+    
+    private func performSearch() {
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = searchText
+        request.resultTypes = .pointOfInterest
+        
+        MKLocalSearch(request: request).start { response, _ in
+            results = response?.mapItems ?? []
+        }
+    }
 }
+
