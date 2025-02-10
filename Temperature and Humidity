@@ -1,0 +1,24 @@
+#include <DHT.h>
+DHT dht (2,DHT11);
+
+#include <Stepper.h>
+
+void setup() {
+  Serial.begin(9600);
+  dht.begin();
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  delay(2000);
+  float T = dht.readTemperature();
+  float H = dht.readHumidity();
+
+  Serial.print("Now Temperature");
+  Serial.print(T);
+      Serial.print("c");
+        Serial.print("Now Humidity");
+          Serial.print(H);
+          Serial.print("%");
+}
