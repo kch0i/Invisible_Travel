@@ -19,9 +19,7 @@ struct ContentView: View {
                         SettingRow(icon: "globe", title: "Language / 語言", detail: "English")
                                         }
                     */
-                    NavigationLink(destination: Mapping()) {
-                        SettingRow(icon: "location.fill", title: "Travel Guide")
-                                        }
+
                     NavigationLink(destination: DeviceInfoView()) {
                         SettingRow(icon: "battery.50", title: "Device Information")
                                         }
