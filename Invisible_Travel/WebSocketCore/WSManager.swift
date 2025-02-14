@@ -11,7 +11,7 @@ import Starscream
 import UIKit
 
 
-protocol WSManagerDelegate: AnyObject {
+protocol WSManagerDelegate {
     func didReceiveStatusMessage(_ status: StatusMessage)
     func didReceiveVideoFrame(_ data: UIImage)
 }
@@ -31,7 +31,7 @@ final class WSManager: WebSocketDelegate {
     // Websocket items
     private var socket: WebSocket?
     // delegate items
-    private weak var delegate: WSManagerDelegate?
+    private var delegate: WSManagerDelegate?
     // Queue
     private let serialQueue = DispatchQueue(label: "com.websocket.serial")
     
