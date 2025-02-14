@@ -36,10 +36,10 @@ struct DeviceConnectionView_Previews: View {
                     Text(wsManager.isConnected ? "Disconnect" : "Connect")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(borderedProminent)
+                .buttonStyle(.borderedProminent)
                 
                 Button("Request Status") {
-                    let command = DeviceCommand(action: .requestStatus)
+                    let command = DeviceInfoCommand(action: .requestStatus)
                     wsManager.sendCommand(command)
                 }
                 .buttonStyle(.bordered)
