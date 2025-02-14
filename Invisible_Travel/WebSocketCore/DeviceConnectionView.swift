@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 
-struct DeviceConnectionView_Previews: View {
+struct DeviceConnectionView: View {
     @StateObject private var wsManager = WSManager.shared
     @State private var serverAddress = "ws://192.168.1.100:81"
     @State private var showAlert = false
@@ -77,8 +77,7 @@ struct DeviceConnectionView_Previews: View {
 
 
 // M: WebSocket Event processing
-
-struct DeviceConnectionView: WSManagerDelegate {
+extension DeviceConnectionView: WSManagerDelegate {
     func didReceiveStatusMessage(_ status: StatusMessage) {
         print("Received status:", status)
         // update UI or processing data
@@ -89,3 +88,12 @@ struct DeviceConnectionView: WSManagerDelegate {
         // processing video (it can send to others)
     }
 }
+
+
+
+#Preview {
+    DeviceConnectionView()
+}
+
+
+

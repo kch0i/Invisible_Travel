@@ -11,7 +11,8 @@ import Starscream
 import UIKit
 
 
-protocol WSManagerDelegate {
+protocol WSManagerDelegate: AnyObject {
+    func connectionStatusDidChange(_ isConnected: Bool)
     func didReceiveStatusMessage(_ status: StatusMessage)
     func didReceiveVideoFrame(_ data: UIImage)
 }
@@ -19,7 +20,8 @@ protocol WSManagerDelegate {
 
 
 final class WSManager: WebSocketDelegate {
-    
+    private var reconnectAttempts = 0
+    private let maxReconnectAttempts = 3
     
     // M: Publish property
     // check connection (Combine)
@@ -152,6 +154,7 @@ final class WSManager: WebSocketDelegate {
             self?.isConnected = false
             let message = "Disconnected (\(code): \(reason)"
             self?.updateError(message)
+            self?.scheduleReconnect()
         }
     }
     
@@ -176,6 +179,17 @@ final class WSManager: WebSocketDelegate {
             self?.delegate?.didReceiveVideoFrame(image)
         }
     }
+    
+    
+    private func scheduleReconnect() {
+        guard reconnectAttempts < maxReconnectAttempts else { return }
+        reconnectAttempts += 1
+        DispatchQueue.global().asyncAfter(deadline: .now() + pow(2, Double(reconnectAttempts))) {
+            self.socket?.connect()
+        }
+    }
+    
+    
 }
 
 // M: data model
