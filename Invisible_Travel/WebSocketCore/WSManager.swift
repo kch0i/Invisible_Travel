@@ -8,10 +8,11 @@
 import Foundation
 import Combine
 import Starscream
+import UIKit
 
 
 protocol WSManagerDelegate: AnyObject {
-    func didReceiveDeviceStatus(_ status: DeviceStatus)
+    func didReceiveStatusMessage(_ status: StatusMessage)
     func didReceiveVideoFrame(_ data: UIImage)
 }
     
@@ -60,8 +61,8 @@ final class WSManager: WebSocketDelegate {
             // setting request
             let request = URLRequest(
                 url: url,
-                timeoutInterval: 10,
-                cachePolicy: .reloadIgnoringLocalAndRemoteCacheData
+                cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
+                timeoutInterval: 10
             )
             
             // initialise websocket
@@ -159,7 +160,7 @@ final class WSManager: WebSocketDelegate {
             let data = Data(text.utf8)
             let status = try JSONDecoder().decode(StatusMessage.self, from: data)
             DispatchQueue.main.async { [weak self] in
-                self?.delegate?.didReceiveDeviceStatus(status)
+                self?.delegate?.didReceiveStatusMessage(status)
             }
         } catch {
             updateError("Status decode failed: \(error.localizedDescription)")
@@ -178,7 +179,7 @@ final class WSManager: WebSocketDelegate {
 }
 
 // M: data model
-struct DeviceCommand: Codable {
+struct DeviceInfoCommand: Codable {
     enum ActionType: String, Codable {
         case requestStatus = "req_status"
         case setResolution = "set_res"
@@ -198,7 +199,7 @@ struct DeviceCommand: Codable {
     }
 }
 
-struct DeviceStatus: Codable {
+struct StatusMessage: Codable {
     struct NetworkInfo: Codable {
         let signalDBM: Int
         let channel: Int

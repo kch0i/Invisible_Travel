@@ -79,7 +79,7 @@ struct DeviceConnectionView_Previews: View {
 // M: WebSocket Event processing
 
 struct DeviceConnectionView: WSManagerDelegate {
-    func didReceiveDeviceStatus(_ status: DeviceStatus) {
+    func didReceiveStatusMessage(_ status: StatusMessage) {
         print("Received status:", status)
         // update UI or processing data
     }
