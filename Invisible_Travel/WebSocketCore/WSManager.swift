@@ -146,8 +146,68 @@ final class WSManager: WebSocketDelegate {
         }
     }
     
+    private func handleDisconnected(reason: String, code: UInt16) {
+        serialQueue.async { [weak self] in
+            self?.isConnected = false
+            let message = "Disconnected (\(code): \(reason)"
+            self?.updateError(message)
+        }
+    }
     
+    private func handleTextMessage(_ text: String) {
+        do {
+            let data = Data(text.utf8)
+            let status = try JSONDecoder().decode(StatusMessage.self, from: data)
+            DispatchQueue.main.async { [weak self] in
+                self?.delegate?.didReceiveDeviceStatus(status)
+            }
+        } catch {
+            updateError("Status decode failed: \(error.localizedDescription)")
+        }
+    }
     
+    private func handleBinaryData(_ data: Data) {
+        guard let image = UIImage(data: data) else {
+            updateError("Invalid image data received")
+            return
+        }
+        DispatchQueue.main.async { [weak self] in
+            self?.delegate?.didReceiveVideoFrame(image)
+        }
+    }
+}
+
+// M: data model
+struct DeviceCommand: Codable {
+    enum ActionType: String, Codable {
+        case requestStatus = "req_status"
+        case setResolution = "set_res"
+        case reboot = "reboot"
+    }
     
+    let action: ActionType
+    var width: Int?
+    var height: Int?
+    
+    init(action: ActionType, resolution: CGSize? = nil) {
+        self.action = action
+        if let resolution = resolution {
+            self.width = Int(resolution.width)
+            self.height = Int(resolution.height)
+        }
+    }
+}
+
+struct DeviceStatus: Codable {
+    struct NetworkInfo: Codable {
+        let signalDBM: Int
+        let channel: Int
+    }
+    
+    let batteryLevel: Int
+    let isCharging: Bool
+    let network: NetworkInfo
+    let uptime: TimeInterval
+    let firmwareVersion: String
 }
 
