@@ -13,6 +13,7 @@ struct DeviceConnectionView: View {
     @StateObject private var wsManager = WSManager.shared
     @State private var serverAddress = "ws://192.168.1.100:81"
     @State private var showAlert = false
+    @StateObject private var delegateHandler = WSDelegateHandler()
     
     var body: some View{
         VStack(spacing: 20){
@@ -70,24 +71,33 @@ struct DeviceConnectionView: View {
         if wsManager.isConnected {
             wsManager.disconnect()
         } else {
-            wsManager.connnet(to: serverAddress, delegate: self)
+            delegateHandler().onStatusMessage = { status in
+                print("Received status: \(status)")
+            }
+            delegateHandler().onVideoFrame = { image in
+                print("Received video frame: ", image.size)
+            }
+            WSManager.connect(to: serverAddress, delegate: delegateHandler)
+            }
         }
     }
-}
+
 
 
 // M: WebSocket Event processing
-extension DeviceConnectionView: WSManagerDelegate {
+private class WSDelegateHandler: NSObject, WSManagerDelegate {
+    var onStatusMessage: ((StatusMessage) -> Void)?
+    var onVideoFrame: ((UIImage) -> Void)?
+    
     func didReceiveStatusMessage(_ status: StatusMessage) {
-        print("Received status:", status)
-        // update UI or processing data
+        onStatusMessage?(status)
     }
     
     func didReceiveVideoFrame(_ image: UIImage) {
-        print("Received video frame:", image.size)
-        // processing video (it can send to others)
+        onVideoFrame?(image)
     }
 }
+
 
 
 

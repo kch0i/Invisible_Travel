@@ -19,7 +19,7 @@ protocol WSManagerDelegate: AnyObject {
     
 
 
-final class WSManager: WebSocketDelegate {
+final class WSManager: ObservableObject, WebSocketDelegate {
     private var reconnectAttempts = 0
     private let maxReconnectAttempts = 3
     
