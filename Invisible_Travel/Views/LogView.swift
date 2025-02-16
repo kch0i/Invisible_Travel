@@ -9,21 +9,20 @@ struct LogView: View {
     @ObservedObject var logManager = LogManager.shared
     
     var body: some View {
-        ScrollViewReader { proxy in
-            List {
-                ForEach(logManager.entries) { entry in
-                    .id(entry.id)
-                    .contextMenu {
-                        if case .jpegFrame(let data) = entry.type {
-                            Buttonk("Export Frame") {
-                                exportFrame(data)
+            ScrollViewReader { proxy in
+                List {
+                    ForEach(logManager.entries) { entry in
+                        LogEntryView(entry: entry)  // 添加缺失的视图主体
+                            .id(entry.id)
+                            .contextMenu {
+                                if case .jpegFrame(let data) = entry.type {
+                                    Button("Export Frame") {  // 修正Button名称
+                                        exportFrame(data)
+                                    }
+                                }
                             }
-                        }
                     }
                 }
-            }
-            .onAppear {
-                scrollToLatest(proxy)
             }
         }
     }

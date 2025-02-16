@@ -27,6 +27,8 @@ class WSManager: WebSocketDelegate {
     private var jpegBuffer = Data()
     private let frameHeader = Data([0xFF, 0xD8])
     private let frameFooter = Data([0xFF, 0xD9])
+    private var reconnectAttempts = 0
+    private let maxReconnectAttempts = 5
     
     @Published private(set) var connectionState: ConnectionState = .disconnected
     @Published private(set) var isConnected = false
@@ -43,14 +45,6 @@ class WSManager: WebSocketDelegate {
         case .binary(let data):
             handleBinaryData(data)
         default: break
-        }
-    }
-    
-    private func processBuffer() {
-        while let frameRange = findFrameRange() {
-            let frameData = jpegBuffer.subdata(in: frameRange)
-            delegate?.didReceiveFrame(frameData)
-            jpegBuffer.removeSubrange(frameRange)
         }
     }
     
@@ -198,22 +192,11 @@ class WSManager: WebSocketDelegate {
     private func handleDisconnected(reason: String, code: UInt16) {
         serialQueue.async { [weak self] in
             self?.isConnected = false
-            let message = "Disconnected (\(code): \(reason)"
+            let message = "Disconnected (\(code)): \(reason)"
             self?.updateError(message)
             self?.scheduleReconnect()
         }
     }
-    
-    private func handleBinaryData(_ data: Data) {
-        guard let image = UIImage(data: data) else {
-            updateError("Invalid image data received")
-            return
-        }
-        DispatchQueue.main.async { [weak self] in
-            self?.delegate?.didReceiveVideoFrame(image)
-        }
-    }
-    
     
     private func scheduleReconnect() {
         guard reconnectAttempts < maxReconnectAttempts else { return }
@@ -223,6 +206,18 @@ class WSManager: WebSocketDelegate {
         }
     }
     
+    private func handleBinaryData(_ data: Data) {
+        jpegBuffer.append(data)
+        processBuffer()
+    }
+    
+    private func processBuffer() {
+        while let frameRange = findFrameRange() {
+            let frameData = jpegBuffer.subdata(in: frameRange)
+            delegate?.didReceiveFrame(frameData)
+            jpegBuffer.removeSubrange(frameRange)
+        }
+    }
     
 }
 

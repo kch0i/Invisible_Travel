@@ -57,13 +57,10 @@ struct VideoPreviewOverlay: View {
                 Image(UIImage: image)
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 150)
-                    .transition(.scale.combined(with: .opacity))
+                    .frame(height:150)
+                }
             }
         }
-        .animation(.default, value: cache.latestImage)
-    }
-}
 
 
 

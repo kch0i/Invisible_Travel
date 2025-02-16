@@ -82,9 +82,15 @@ class MockServer {
     // handle command
     private func handleCommand(_ command: DeviceInfoCommand, connection: NWConnection) {
         switch command.action {
-        case .requestStatus:
-            let status = statusGenerator()
-            sendData(try! JSONEncoder().encode(status), via: connection)
+            case .requestStatus:
+                if let status = statusGenerator() {  // 安全解包
+                    do {
+                        let data = try JSONEncoder().encode(status)
+                        sendData(data, via: connection)
+                    } catch {
+                        print("Encoding error: \(error)")
+                    }
+                }
         
         case .setResolution:
             print("Mock: set resolution to \(command.width ?? 0) x \(command.height ?? 0)")

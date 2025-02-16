@@ -8,14 +8,14 @@
 enum WSDataType: Equatable {
     case status(StatusMessage)
     case plainText(String)
-    case jepgFrame(Data)
+    case jpegFrame(Data)
     case rawData(Data)
     
-    var descrtiption: String {
+    var description: String {
         switch self {
         case .status: return "Status"
         case .plainText: return "Text"
-        case .jepgFrame: return "VideoFrame"
+        case .jpegFrame: return "VideoFrame"
         case .rawData: return "Binary"
         }
     }

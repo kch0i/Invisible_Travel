@@ -11,7 +11,7 @@ import SwiftUI
 
 struct DeviceConnectionView: View {
     @ObservedObject var wsManager = WSManager.shared
-    @StateObject var statusMonitor = statusMonitor()
+    @StateObject var statusMonitor = StatusMonitor()
     @State private var serverAddress = "ws://192.168.1.100:81"
     @State private var showAlert = false
     @StateObject private var delegateHandler = WSDelegateHandler()
@@ -42,17 +42,17 @@ struct DeviceConnectionView: View {
             }
             
             private func startStreaming() {
-                let command = DeviceInfoCommand(deviceId: .startVideoStream)
-                wsManager.send(command)
+                let command = DeviceInfoCommand(action: .startVideoStream)
+                wsManager.sendCommand(command)
             }
             
             private func stopStreaming() {
                 let command = DeviceInfoCommand(deviceId: .stopVideoStream)
-                wsManager.send(command)
+                wsManager.sendCommand(command)
             }
             
             struct LiveParameterPanel: View {
-                @ObservedObject var stats: statusMonitor
+                @ObservedObject var stats: StatusMonitor
                 
                 var body: some View {
                     HStack(spacing: 20) {
@@ -130,28 +130,6 @@ struct DeviceConnectionView: View {
             }
         }
     }
-
-
-
-// M: WebSocket Event processing
-private class WSDelegateHandler: NSObject, WSManagerDelegate, ObservableObject {
-    var onStatusMessage: ((StatusMessage) -> Void)?
-    var onVideoFrame: ((UIImage) -> Void)?
-    
-    func didReceiveStatusMessage(_ status: StatusMessage) {
-        onStatusMessage?(status)
-    }
-    
-    func didReceiveVideoFrame(_ image: UIImage) {
-        onVideoFrame?(image)
-    }
-    
-    func connectionStatusDidChange(_ isConnected: Bool) {
-        print("Connection status changed: \(isConnected)")
-    }
-}
-
-
 
 
 #Preview {

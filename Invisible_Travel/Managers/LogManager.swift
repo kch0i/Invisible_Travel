@@ -5,6 +5,19 @@
 //  Created by kc on 16/2/2025.
 //
 
+struct LogEntry: Identifiable {
+    let id = UUID()
+    let timestamp: Date
+    let type: WSDataType
+    let direction: Direction
+    let metaData: [String: String]?
+    
+    enum Direction {
+        case sent, received
+    }
+}
+
+
 class LogManager: ObservableObject {
     static let shared = LogManager()
     @Published private(set) var entries = [LogEntry]()
