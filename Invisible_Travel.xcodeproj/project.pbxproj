@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4AEA19D52D5DE48D002FAF8E /* Starscream in Frameworks */ = {isa = PBXBuildFile; productRef = 4AEA19D42D5DE48D002FAF8E /* Starscream */; };
+		4AEA19E02D619391002FAF8E /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 4AEA19DF2D619391002FAF8E /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,6 +32,7 @@
 		4A274CA22D08813900EC1990 /* Invisible_Travel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Invisible_Travel.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A274CB22D08813A00EC1990 /* Invisible_TravelTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Invisible_TravelTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A274CBC2D08813A00EC1990 /* Invisible_TravelUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Invisible_TravelUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4AEA19DF2D619391002FAF8E /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -84,6 +86,7 @@
 				4A274CB52D08813A00EC1990 /* Invisible_TravelTests */,
 				4A274CBF2D08813A00EC1990 /* Invisible_TravelUITests */,
 				4A274CA32D08813900EC1990 /* Products */,
+				4AEA19DF2D619391002FAF8E /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -221,6 +224,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4AEA19E02D619391002FAF8E /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

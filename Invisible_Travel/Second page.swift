@@ -21,13 +21,7 @@ struct DeviceInfoView: View {
 
 
 
-struct HeadphoneConnectionView: View {
-    var body: some View {
-        Text("Headphone Connection Details")
-            .font(.largeTitle)
-            .navigationTitle("Headphone Connection")
-    }
-}
+
 
 struct WeatherInfoView: View {
     var body: some View {
