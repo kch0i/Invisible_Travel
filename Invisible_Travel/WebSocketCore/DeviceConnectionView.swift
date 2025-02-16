@@ -10,10 +10,15 @@ import SwiftUI
 
 
 struct DeviceConnectionView: View {
-    @StateObject private var wsManager = WSManager.shared
+    @ObservedObject var wsManager: WSManager
     @State private var serverAddress = "ws://192.168.1.100:81"
     @State private var showAlert = false
     @StateObject private var delegateHandler = WSDelegateHandler()
+    
+    init(manager: WSManager = .shared) {
+        _wsManager = ObservedObject(wrappedValue: manager)
+    }
+    
     
     var body: some View{
         VStack(spacing: 20){
@@ -74,7 +79,7 @@ struct DeviceConnectionView: View {
             delegateHandler.onStatusMessage = { status in
                 print("Received status: \(status)")
             }
-            delegateHandler.onVideoFrame = { image in
+            delegateHandler.onVideoFrame = { (image: UIImage) in
                 print("Received video frame: ", image.size)
             }
             wsManager.connect(to: serverAddress, delegate: delegateHandler)
@@ -85,7 +90,7 @@ struct DeviceConnectionView: View {
 
 
 // M: WebSocket Event processing
-private class WSDelegateHandler: NSObject, WSManagerDelegate {
+private class WSDelegateHandler: NSObject, WSManagerDelegate, ObservableObject {
     var onStatusMessage: ((StatusMessage) -> Void)?
     var onVideoFrame: ((UIImage) -> Void)?
     
@@ -95,6 +100,10 @@ private class WSDelegateHandler: NSObject, WSManagerDelegate {
     
     func didReceiveVideoFrame(_ image: UIImage) {
         onVideoFrame?(image)
+    }
+    
+    func connectionStatusDidChange(_ isConnected: Bool) {
+        print("Connection status changed: \(isConnected)")
     }
 }
 

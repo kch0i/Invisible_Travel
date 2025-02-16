@@ -58,7 +58,7 @@ final class WSManager: ObservableObject, WebSocketDelegate {
         serialQueue.async { [weak self] in
             guard let self = self else { return }
             
-            // disconnect the present connection
+            // reset connection
             self.socket?.disconnect()
             
             //url check
