@@ -23,6 +23,13 @@ final class WSManager: ObservableObject, WebSocketDelegate {
     private var reconnectAttempts = 0
     private let maxReconnectAttempts = 3
     
+    // Add connection status enumeration to enhance readability
+    enum ConnectionState {
+        case connected, disconnected, connecting
+    }
+    
+    @Published private(set) var connectionState: ConnectionState = .disconnected
+    
     // M: Publish property
     // check connection (Combine)
     @Published private(set) var isConnected = false

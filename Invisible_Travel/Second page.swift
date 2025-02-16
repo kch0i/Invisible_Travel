@@ -19,13 +19,7 @@ struct DeviceInfoView: View {
     }
 }
 
-struct DeviceConnectionView: View {
-    var body: some View {
-        Text("Device Connection Details")
-            .font(.largeTitle)
-            .navigationTitle("Device Connection")
-    }
-}
+
 
 struct HeadphoneConnectionView: View {
     var body: some View {

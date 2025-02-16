@@ -71,13 +71,13 @@ struct DeviceConnectionView: View {
         if wsManager.isConnected {
             wsManager.disconnect()
         } else {
-            delegateHandler().onStatusMessage = { status in
+            delegateHandler.onStatusMessage = { status in
                 print("Received status: \(status)")
             }
-            delegateHandler().onVideoFrame = { image in
+            delegateHandler.onVideoFrame = { image in
                 print("Received video frame: ", image.size)
             }
-            WSManager.connect(to: serverAddress, delegate: delegateHandler)
+            wsManager.connect(to: serverAddress, delegate: delegateHandler)
             }
         }
     }
