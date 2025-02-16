@@ -27,7 +27,10 @@ class MockServer {
         StatusMessage(
             batteryLevel: Int.random(in: 20...100),
             isCharging: Bool.random(),
-            network: Int.random(in: -90...50),
+            network: StatusMessage.NetworkInfo(
+                signalDBM: Int.random(in: -90 ... -50),
+                channel: Int.random(in: 1...11)
+            ),
             uptime: Double.random(in: 0...86400),
             firmwareVersion: "Mock-1.0.0"
         )
