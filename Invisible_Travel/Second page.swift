@@ -13,7 +13,7 @@ import MapKit
 
 struct DeviceInfoView: View {
     var body: some View {
-        Text("Device Information")
+        Text("Device Information-1")
             .font(.largeTitle)
             .navigationTitle("Device Information")
     }
