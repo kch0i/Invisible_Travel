@@ -10,7 +10,8 @@ import SwiftUI
 
 
 struct DeviceConnectionView: View {
-    @ObservedObject var wsManager: WSManager
+    @ObservedObject var wsManager = WSManager.shared
+    @StateObject var statusMonitor = statusMonitor()
     @State private var serverAddress = "ws://192.168.1.100:81"
     @State private var showAlert = false
     @StateObject private var delegateHandler = WSDelegateHandler()
@@ -28,6 +29,49 @@ struct DeviceConnectionView: View {
                     .fill(wsManager.isConnected ? Color.green : Color.red)
                 Text(wsManager.isConnected ? "Connected" : "Disconnected")
             }
+            
+            VStack {
+                ConnectionStatusView(isConnected: wsManager.isConnected)
+                LiveParameterPanel(stats: statusMonitor)
+                        
+                // 视频流控制按钮
+                ControlButtonGroup(
+                    startAction: startStreaming,
+                    stopAction: stopStreaming
+                )
+            }
+            
+            private func startStreaming() {
+                let command = DeviceInfoCommand(deviceId: .startVideoStream)
+                wsManager.send(command)
+            }
+            
+            private func stopStreaming() {
+                let command = DeviceInfoCommand(deviceId: .stopVideoStream)
+                wsManager.send(command)
+            }
+            
+            struct LiveParameterPanel: View {
+                @ObservedObject var stats: statusMonitor
+                
+                var body: some View {
+                    HStack(spacing: 20) {
+                        ParameterGauge(
+                            label: "Frame Rate",
+                            value: stats.frameRate,
+                            unit: "fps",
+                            color: .blue
+                        )
+                        ParameterGauge(
+                            label: "Bitrate",
+                            value: stats.bitrate,
+                            unit: "Mbps",
+                            color: .green
+                        )
+                    }
+                }
+            }
+            
             
             // Server address input
             TextField("WebSocket Server", text: $serverAddress)

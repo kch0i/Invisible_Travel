@@ -32,7 +32,12 @@ struct ContentView: View {
                     NavigationLink(destination: WeatherInfoView()) {
                         SettingRow(icon: "sun.max", title: "Weather Information")
                                         }
+                    NavigationLink("Communication Log", destination: LogView())
+                    NavigationLink("Video Archive", destination: VideoArchiveView())
+                    
+
                 }
+                .overlay(VideoPreviewOverlay())
             
             }
             .navigationTitle("Invisible Travel")
@@ -41,6 +46,27 @@ struct ContentView: View {
         }
     }
 }
+
+struct VideoPreviewOverlay: View {
+    @ObservedObject var cache = ImageCache.shared
+    
+    var body: some View {
+        VStack {
+            Spacer()
+            if let image = cache.latestImage {
+                Image(UIImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 150)
+                    .transition(.scale.combined(with: .opacity))
+            }
+        }
+        .animation(.default, value: cache.latestImage)
+    }
+}
+
+
+
 
 struct SettingRow: View {
     var icon: String

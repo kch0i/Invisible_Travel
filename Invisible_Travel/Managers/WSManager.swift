@@ -15,32 +15,71 @@ protocol WSManagerDelegate: AnyObject {
     func connectionStatusDidChange(_ isConnected: Bool)
     func didReceiveStatusMessage(_ status: StatusMessage)
     func didReceiveVideoFrame(_ data: UIImage)
+    func didReceive(_ dataType: WSDataType)
+    func didReceiveFrame(_ frameData: Data)
 }
     
 
 
-final class WSManager: ObservableObject, WebSocketDelegate {
-    private var reconnectAttempts = 0
-    private let maxReconnectAttempts = 3
+class WSManager: WebSocketDelegate {
+    private var socket: WebSocket?
+    private let jsonDecoder = JSONDecoder()
+    private var jpegBuffer = Data()
+    private let frameHeader = Data([0xFF, 0xD8])
+    private let frameFooter = Data([0xFF, 0xD9])
+    
+    @Published private(set) var connectionState: ConnectionState = .disconnected
+    @Published private(set) var isConnected = false
+    @Published private(set) var lastError: String?
+    
+    weak var delegate: WSManagerDelegate?
+    
+    
+    // video processing
+    func didReceive(event: WebSocketEvent) {
+        switch event {
+        case .text(let text):
+            handleTextMessage(text)
+        case .binary(let data):
+            handleBinaryData(data)
+        default: break
+        }
+    }
+    
+    private func processBuffer() {
+        while let frameRange = findFrameRange() {
+            let frameData = jpegBuffer.subdata(in: frameRange)
+            delegate?.didReceiveFrame(frameData)
+            jpegBuffer.removeSubrange(frameRange)
+        }
+    }
+    
+    private func findFrameRange() -> Range<Int>? {
+        guard let headerRange = jpegBuffer.range(of: frameHeader),
+              let footerRange = jpegBuffer.range(of: frameFooter),
+              footerRange.lowerBound > headerRange.upperBound else {
+            return nil
+        }
+        return headerRange.lowerBound..<footerRange.upperBound
+    }
+    
+    private func handleTextMessage(_ text: String) {
+        if let data = text.data(using: .utf8),
+           let status = try? jsonDecoder.decode(StatusMessage.self, from: data) {
+            delegate?.didReceive(.status(status))
+        } else {
+            delegate?.didReceive(.plainText(text))
+        }
+    }
+    
     
     // Add connection status enumeration to enhance readability
     enum ConnectionState {
         case connected, disconnected, connecting
     }
     
-    @Published private(set) var connectionState: ConnectionState = .disconnected
     
-    // M: Publish property
-    // check connection (Combine)
-    @Published private(set) var isConnected = false
-    // Last error msg
-    @Published private(set) var lastError: String?
-    
-    // M: Private property
-    // Websocket items
-    private var socket: WebSocket?
-    // delegate items
-    private var delegate: WSManagerDelegate?
+
     // Queue
     private let serialQueue = DispatchQueue(label: "com.websocket.serial")
     
@@ -162,18 +201,6 @@ final class WSManager: ObservableObject, WebSocketDelegate {
             let message = "Disconnected (\(code): \(reason)"
             self?.updateError(message)
             self?.scheduleReconnect()
-        }
-    }
-    
-    private func handleTextMessage(_ text: String) {
-        do {
-            let data = Data(text.utf8)
-            let status = try JSONDecoder().decode(StatusMessage.self, from: data)
-            DispatchQueue.main.async { [weak self] in
-                self?.delegate?.didReceiveStatusMessage(status)
-            }
-        } catch {
-            updateError("Status decode failed: \(error.localizedDescription)")
         }
     }
     
