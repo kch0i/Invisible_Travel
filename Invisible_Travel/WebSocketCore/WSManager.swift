@@ -221,11 +221,14 @@ struct DeviceInfoCommand: Codable {
 }
 
 struct StatusMessage: Codable {
-
+    struct NetworkInfo: Codable {
+        let signalDBM: Int
+        let channel: Int
+    }
     
     let batteryLevel: Int
     let isCharging: Bool
-    let network: Int
+    let network: NetworkInfo
     let uptime: TimeInterval
     let firmwareVersion: String
 }
