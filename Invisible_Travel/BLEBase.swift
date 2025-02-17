@@ -9,27 +9,27 @@ import Foundation
 import CoreBluetooth
 import SwiftUI
 
-// MARK: - 蓝牙权限处理协议
+// MARK: - Bluetooth Rights Handling Protocol
 protocol BluetoothPermissionHandler{
     func handleBluetoothUnauthorized()
     func handleBluetoothPoweredOff()
 }
 
-// MARK: - 蓝牙连接状态枚举
+// MARK: - Bluetooth connection status enumeration
 enum ConnectionState: Int {
     case disconnected
     case connecting
     case connected
 }
 
-// MARK: - 蓝牙设备数据模型
+// MARK: - Bluetooth device data model
 class BluetoothDevice: Identifiable {
     let id: UUID
     weak var peripheral: CBPeripheral?
     var name: String
     var rssi: Int
     var state: ConnectionState
-    var lastConnectionAttempt: Date?  // 连接时间追踪
+    var lastConnectionAttempt: Date?  // Connection time tracking
     
     init(peripheral: CBPeripheral, rssi: Int) {
         self.id = peripheral.identifier
@@ -40,28 +40,28 @@ class BluetoothDevice: Identifiable {
     }
 }
 
-// MARK: - 蓝牙核心管理器
+// MARK: - Bluetooth Core Manager
 class BluetoothManager: NSObject, ObservableObject {
-    // 数据发布属性
+    // Data Release Attributes
     @Published var discoveredDevices: [BluetoothDevice] = []
     @Published var isScanning: Bool = false
     @Published var authorizationStatus: CBManagerAuthorization = .notDetermined
     
-    // 蓝牙核心组件
+    // Bluetooth core components
     private var centralManager: CBCentralManager!
     private let scanTimeout: TimeInterval = 3.0
     private var connectionTimeoutTimers: [UUID: Timer] = [:]
     
-    // 依赖注入
+    // dependency injection
     var permissionHandler: BluetoothPermissionHandler?
     
-    // 初始化方法
+    // Initialisation methods
     override init() {
         super.init()
         initializeCentralManager()
     }
     
-    // MARK: - 公共方法
+    // MARK: - public method
     func startScan() {
         guard centralManager.state == .poweredOn else {
             handlePreScanningState()
@@ -90,7 +90,7 @@ class BluetoothManager: NSObject, ObservableObject {
     }
 }
 
-// MARK: - CBCentralManagerDelegate 实现
+// MARK: - CBCentralManagerDelegate
 extension BluetoothManager: CBCentralManagerDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         handleBluetoothStateUpdate(central)
@@ -120,7 +120,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     }
 }
 
-// MARK: - CBPeripheralDelegate 实现
+// MARK: - CBPeripheralDelegate
 extension BluetoothManager: CBPeripheralDelegate {
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         guard let services = peripheral.services else { return }
@@ -135,7 +135,7 @@ extension BluetoothManager: CBPeripheralDelegate {
     }
 }
 
-// MARK: - 私有方法扩展
+// MARK: - private method extension
 private extension BluetoothManager {
     func initializeCentralManager() {
         let options: [String: Any] = [
@@ -170,7 +170,7 @@ private extension BluetoothManager {
         case .denied:
             permissionHandler?.handleBluetoothUnauthorized()
         case .restricted:
-            print("設備限制藍牙訪問")
+            print("Device restricts Bluetooth access")
         default: break
         }
     }
@@ -289,7 +289,7 @@ private extension BluetoothManager {
     }
 }
 
-// MARK: - SwiftUI 视图组件
+// MARK: - SwiftUI
 @MainActor
 struct HeadphoneConnectionView: View {
     @StateObject private var btManager = BluetoothManager()
@@ -304,7 +304,7 @@ struct HeadphoneConnectionView: View {
         }
         .padding()
         .onAppear(perform: initializeBluetooth)
-        .alert("藍牙權限", isPresented: $showBluetoothAlert) {
+        .alert("Bluetooth Privilege", isPresented: $showBluetoothAlert) {
             AlertButtons
         }
     }
@@ -329,17 +329,17 @@ struct HeadphoneConnectionView: View {
 
 extension HeadphoneConnectionView: BluetoothPermissionHandler {
     func handleBluetoothUnauthorized() {
-        alertMessage = "需要藍牙權限來連接設備，請前往設置開啓權限"
+        alertMessage = "Requires Bluetooth privileges to connect to the device, please go to Setting Enabling Privileges."
         showBluetoothAlert = true
     }
     
     func handleBluetoothPoweredOff() {
-        alertMessage = "請打開藍牙以進行設備連接"
+        alertMessage = "Please turn on Bluetooth for device connection"
         showBluetoothAlert = true
     }
 }
 
-// MARK: - 子视图组件（保持原结构，增加状态提示）
+// MARK: - subview component
 private struct StatusHeaderView: View {
     @ObservedObject var manager: BluetoothManager
     
@@ -353,30 +353,27 @@ private struct StatusHeaderView: View {
     }
 }
 
-// ...（其他子视图组件保持不变，参考原始代码）
-
-
-// 设备列表组件 / Device List Component
+// Device List Component
 private struct DeviceListView: View {
     @ObservedObject var manager: BluetoothManager
     
     var body: some View {
         List(manager.discoveredDevices) { device in
             HStack(spacing: 12) {
-                // 信号强度图标 / Signal Strength Icon
+                // Signal Strength Icon
                 SignalStrengthIcon(rssi: device.rssi)
                 
-                // 设备名称 / Device Name
+                // Device Name
                 Text(device.name)
                     .font(.body)
                     .lineLimit(1)
                 
                 Spacer()
                 
-                // 连接状态指示 / Connection Status Indicator
+                // Connection Status Indicator
                 ConnectionStatusIndicator(state: device.state)
                 
-                // 连接按钮 / Connection Button
+                // Connection Button
                 Button(action: { manager.toggleConnection(for: device) }) {
                     Text(buttonTitle(for: device.state))
                         .font(.callout)
@@ -393,7 +390,7 @@ private struct DeviceListView: View {
         .listStyle(.plain)
     }
     
-    // 按钮标题逻辑 / Button Title Logic
+    // Button Title Logic
     private func buttonTitle(for state: ConnectionState) -> String {
         switch state {
         case .connected: return "disconnect"
@@ -402,7 +399,7 @@ private struct DeviceListView: View {
         }
     }
     
-    // 按钮背景色逻辑 / Button Background Logic
+    // Button Background Logic
     private func buttonBackground(for state: ConnectionState) -> Color {
         switch state {
         case .connected: return .red
@@ -412,13 +409,13 @@ private struct DeviceListView: View {
     }
 }
 
-// 控制按钮组件 / Control Buttons Component
+// Control Buttons Component
 private struct ControlButtonsView: View {
     @ObservedObject var manager: BluetoothManager
     
     var body: some View {
         HStack(spacing: 20) {
-            // 重新扫描按钮 / Rescan Button
+            // Rescan Button
             Button(action: {
                 manager.stopScan()
                 manager.startScan()
@@ -430,7 +427,7 @@ private struct ControlButtonsView: View {
                     .cornerRadius(8)
             }
             
-            // 全部断开按钮 / Disconnect All Button
+            // Disconnect All Button
             Button(action: {
                 manager.discoveredDevices.forEach { device in
                     if device.state != .disconnected {
@@ -448,9 +445,9 @@ private struct ControlButtonsView: View {
     }
 }
 
-// MARK: - 自定义子组件 Custom Subcomponents
+// MARK: - Custom Subcomponents
 
-/// 信号强度图标组件 / Signal Strength Icon Component
+/// Signal Strength Icon Component
 struct SignalStrengthIcon: View {
     let rssi: Int
     
@@ -461,7 +458,7 @@ struct SignalStrengthIcon: View {
             .imageScale(.large)
     }
     
-    // 信号等级计算逻辑 / Signal Level Calculation
+    // Signal Level Calculation
     private var signalLevel: (String, Color) {
         switch rssi {
         case ..<(-80): return ("wifi.slash", .gray)
@@ -471,7 +468,7 @@ struct SignalStrengthIcon: View {
     }
 }
 
-/// 连接状态指示器 / Connection Status Indicator
+/// Connection Status Indicator
 struct ConnectionStatusIndicator: View {
     let state: ConnectionState
     
