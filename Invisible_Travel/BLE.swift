@@ -157,9 +157,9 @@ private extension BluetoothManager {
             case .poweredOff:
                 self.permissionHandler?.handleBluetoothPoweredOff()
             case .poweredOn:
-                print("蓝牙已就绪")
+                print("Bluetooth ready")
             default:
-                print("蓝牙状态变更: \(central.state.rawValue)")
+                print("Bluetooth status changes: \(central.state.rawValue)")
             }
         }
     }
@@ -170,7 +170,7 @@ private extension BluetoothManager {
         case .denied:
             permissionHandler?.handleBluetoothUnauthorized()
         case .restricted:
-            print("设备限制蓝牙访问")
+            print("設備限制藍牙訪問")
         default: break
         }
     }
@@ -241,12 +241,12 @@ private extension BluetoothManager {
     
     func handleFailedConnection(_ peripheral: CBPeripheral, error: Error?) {
         updateDeviceState(peripheral, state: .disconnected)
-        print("连接失败: \(error?.localizedDescription ?? "")")
+        print("Connection failed: \(error?.localizedDescription ?? "")")
     }
     
     func handleDisconnection(_ peripheral: CBPeripheral, error: Error?) {
         updateDeviceState(peripheral, state: .disconnected)
-        print("连接断开: \(error?.localizedDescription ?? "")")
+        print("Disconnect: \(error?.localizedDescription ?? "")")
     }
     
     func updateDeviceState(_ peripheral: CBPeripheral, state: ConnectionState) {
@@ -304,15 +304,15 @@ struct HeadphoneConnectionView: View {
         }
         .padding()
         .onAppear(perform: initializeBluetooth)
-        .alert("蓝牙权限要求", isPresented: $showBluetoothAlert) {
+        .alert("藍牙權限", isPresented: $showBluetoothAlert) {
             AlertButtons
         }
     }
     
     private var AlertButtons: some View {
         Group {
-            Button("前往设置") { openAppSettings() }
-            Button("取消", role: .cancel) { }
+            Button("To setting") { openAppSettings() }
+            Button("cancel", role: .cancel) { }
         }
     }
     
@@ -329,12 +329,12 @@ struct HeadphoneConnectionView: View {
 
 extension HeadphoneConnectionView: BluetoothPermissionHandler {
     func handleBluetoothUnauthorized() {
-        alertMessage = "需要蓝牙权限来连接设备，请前往设置开启权限"
+        alertMessage = "需要藍牙權限來連接設備，請前往設置開啓權限"
         showBluetoothAlert = true
     }
     
     func handleBluetoothPoweredOff() {
-        alertMessage = "请打开蓝牙以进行设备连接"
+        alertMessage = "請打開藍牙以進行設備連接"
         showBluetoothAlert = true
     }
 }
