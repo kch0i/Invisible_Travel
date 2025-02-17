@@ -20,7 +20,13 @@ struct DeviceInfoView: View {
 }
 
 
-
+struct DeviceConnectionView: View {
+    var body: some View {
+        Text("DeviceConnectionView")
+            .font(.largeTitle)
+            .navigationTitle("DeviceConnectionView")
+    }
+}
 
 
 struct WeatherInfoView: View {
