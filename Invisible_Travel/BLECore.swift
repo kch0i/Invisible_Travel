@@ -11,10 +11,12 @@ import SwiftUI
 
 // MARK: - Device Filter Engine
 final class DeviceFilterEngine {
-    /// Fuzzy matching rules for audio devices
+    /// Regular expression pattern for audio device name matching
     private let namePattern = "(?i)audio|headset"
     
-    /// Apply name filtering rules
+    /// Applies name filtering using predefined regex pattern
+    /// - Parameter name: Device name to validate
+    /// - Returns: Boolean indicating name match status
     func applyNameFilter(_ name: String) -> Bool {
         return name.range(of: namePattern, options: .regularExpression) != nil
     }
@@ -26,11 +28,12 @@ final class ScanScheduler {
     private let interval: TimeInterval = 30
     private weak var manager: BluetoothManager?
     
+    /// Initializes with BluetoothManager reference
     init(manager: BluetoothManager) {
         self.manager = manager
     }
     
-    /// Start auto refresh
+    /// Starts automated scan refresh cycle
     func startAutoRefresh() {
         guard let manager = manager else { return }
         
@@ -39,7 +42,7 @@ final class ScanScheduler {
         scheduleNextRefresh()
     }
     
-    /// Schedule next refresh
+    /// Schedules next scan iteration
     private func scheduleNextRefresh() {
         DispatchQueue.main.asyncAfter(deadline: .now() + interval) { [weak self] in
             self?.startAutoRefresh()
@@ -47,14 +50,15 @@ final class ScanScheduler {
     }
 }
 
-// MARK: - Haptic Feedback
+// MARK: - Haptic Feedback Controller
 enum HapticFeedbackType {
     case connectionSuccess
     case timeout
 }
 
 final class HapticFeedbackController {
-    /// Trigger specific feedback type
+    /// Triggers haptic feedback based on event type
+    /// - Parameter type: Feedback event category
     static func trigger(_ type: HapticFeedbackType) {
         let generator = UIImpactFeedbackGenerator(style: .light)
         switch type {
@@ -68,15 +72,15 @@ final class HapticFeedbackController {
 
 // MARK: - Bluetooth Manager Extension
 extension BluetoothManager {
-    /// Enhanced device discovery handling
+    /// Processes discovered peripherals with enhanced filtering
     func enhancedProcessDiscoveredPeripheral(
         _ peripheral: CBPeripheral,
         rssi: NSNumber,
         filterEngine: DeviceFilterEngine
     ) {
-        guard peripheral.name != nil else { return }
+        guard let deviceName = peripheral.name else { return }
         
-        let isValidName = filterEngine.applyNameFilter(peripheral.name!)
+        let isValidName = filterEngine.applyNameFilter(deviceName)
         let isValidRSSI = rssi.intValue >= -100
         
         if isValidName && isValidRSSI {
@@ -84,83 +88,91 @@ extension BluetoothManager {
         }
     }
     
-    /// Immediate device connection
+    /// Initiates immediate connection to specified device
+    /// - Parameter device: Target Bluetooth device
     func immediateConnect(_ device: BluetoothDevice) {
         guard let peripheral = device.peripheral else { return }
         
         // Reset connection state
-        connectionTimeoutTimers[device.id]?.invalidate()
+        invalidateTimer(for: device.id)
         device.state = .connecting
         device.lastConnectionAttempt = Date()
         
         // Initiate system connection
-        centralManager.connect(peripheral, options: [
+        (centralManager as CBCentralManager).connect(peripheral, options: [
             CBConnectPeripheralOptionNotifyOnDisconnectionKey: true
         ])
         
         startConnectionTimer(for: device)
     }
     
-    /// Force disconnect device
+    /// Forces disconnection of specified device
+    /// - Parameter device: Target Bluetooth device
     func forceDisconnect(_ device: BluetoothDevice) {
         guard let peripheral = device.peripheral else { return }
         
-        // Cleanup related resources
-        connectionTimeoutTimers[device.id]?.invalidate()
+        // Cleanup resources
+        invalidateTimer(for: device.id)
         peripheral.delegate = nil
         centralManager.cancelPeripheralConnection(peripheral)
         
-        // Update state immediately
-        if let index = discoveredDevices.firstIndex(where: { $0.id == device.id }) {
-            discoveredDevices[index].state = .disconnected
-        }
+        // Update device state
+        updateDeviceState(peripheral, state: .disconnected)
+    }
+    
+    /// Invalidates connection timer for device
+    /// - Parameter deviceId: UUID of target device
+    func invalidateTimer(for deviceId: UUID) {
+        connectionTimeoutTimers[deviceId]?.invalidate()
     }
 }
 
 // MARK: - Status Display Builder
 struct DeviceStatusViewBuilder {
-    /// Generate status display configuration
+    /// Generates display configuration for connection state
+    /// - Parameter state: Current connection state
+    /// - Returns: Tuple containing display text and color
     static func build(for state: ConnectionState) -> (text: String, color: Color) {
         switch state {
         case .connected:
-            return ("已連接 Connected", .green)
+            return ("Connected", .green)
         case .connecting:
-            return ("搜尋中 Searching", .orange)
+            return ("Searching", .orange)
         default:
-            return ("未連接 Disconnected", .gray)
+            return ("Disconnected", .gray)
         }
     }
 }
 
-// MARK: - View Components Extension
+// MARK: - View Components
 private struct EnhancedDeviceListItem: View {
-    @ObservedObject var device: BluetoothDevice
-    let manager: BluetoothManager
+    @EnvironmentObject var manager: BluetoothManager
+    let deviceId: UUID
     
     var body: some View {
-        HStack(spacing: 12) {
-            // Signal strength icon
-            SignalStrengthIcon(rssi: device.rssi)
-            
-            // Device info
-            VStack(alignment: .leading) {
-                Text(device.name)
-                    .font(.headline)
-                Text(DeviceStatusViewBuilder.build(for: device.state).text)
-                    .font(.caption)
+        if let device = manager.discoveredDevices.first(where: { $0.id == deviceId }) {
+            HStack(spacing: 12) {
+                SignalStrengthIndicator(rssi: device.rssi)
+                
+                VStack(alignment: .leading) {
+                    Text(device.name)
+                        .font(.headline)
+                    Text(DeviceStatusViewBuilder.build(for: device.state).text)
+                        .font(.caption)
+                }
+                
+                Spacer()
+                
+                ConnectionControlButton(deviceId: device.id)
             }
-            
-            Spacer()
-            
-            // Connection control button
-            ConnectionControlButton(device: device, manager: manager)
+            .contentShape(Rectangle())
+            .onTapGesture(perform: handleTap)
         }
-        .contentShape(Rectangle())
-        .onTapGesture { handleTap() }
     }
     
-    /// Handle tap event
     private func handleTap() {
+        guard let device = manager.discoveredDevices.first(where: { $0.id == deviceId }) else { return }
+        
         if device.state == .disconnected {
             manager.immediateConnect(device)
         } else {
@@ -170,30 +182,67 @@ private struct EnhancedDeviceListItem: View {
     }
 }
 
-// MARK: - Connection Control Button
 struct ConnectionControlButton: View {
-    @ObservedObject var device: BluetoothDevice
-    let manager: BluetoothManager
+    @EnvironmentObject var manager: BluetoothManager
+    let deviceId: UUID
     
     var body: some View {
-        let config = DeviceStatusViewBuilder.build(for: device.state)
-        
-        Button(action: performAction) {
-            Text(config.text)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(config.color)
-                .foregroundColor(.white)
-                .cornerRadius(8)
+        if let device = manager.discoveredDevices.first(where: { $0.id == deviceId }) {
+            let config = DeviceStatusViewBuilder.build(for: device.state)
+            
+            Button(action: performAction) {
+                Text(config.text)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(config.color)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+            }
         }
     }
     
-    /// Perform connect/disconnect action
     private func performAction() {
+        guard let device = manager.discoveredDevices.first(where: { $0.id == deviceId }) else { return }
+        
         if device.state == .disconnected {
             manager.immediateConnect(device)
         } else {
             manager.forceDisconnect(device)
         }
+    }
+}
+
+// MARK: - Coordinator Protocol
+protocol BluetoothManagerDelegate: AnyObject {
+    func didProcessPeripheral(_ peripheral: CBPeripheral, rssi: NSNumber)
+    func didStartConnectionTimer(for device: BluetoothDevice)
+}
+
+extension BluetoothManager {
+    weak var delegate: BluetoothManagerDelegate?
+    
+    private func processDiscoveredPeripheral(_ peripheral: CBPeripheral, rssi: NSNumber) {
+        delegate?.didProcessPeripheral(peripheral, rssi: rssi)
+    }
+    
+    private func startConnectionTimer(for device: BluetoothDevice) {
+        delegate?.didStartConnectionTimer(for: device)
+    }
+}
+
+final class BLECoreCoordinator: BluetoothManagerDelegate {
+    private weak var manager: BluetoothManager?
+    
+    init(manager: BluetoothManager) {
+        self.manager = manager
+        self.manager?.delegate = self
+    }
+    
+    func didProcessPeripheral(_ peripheral: CBPeripheral, rssi: NSNumber) {
+        manager?.processDiscoveredPeripheral(peripheral, rssi: rssi)
+    }
+    
+    func didStartConnectionTimer(for device: BluetoothDevice) {
+        manager?.startConnectionTimer(for: device)
     }
 }
