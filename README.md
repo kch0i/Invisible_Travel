@@ -19,56 +19,56 @@ BlindApp 是一款專為視障人士設計的 iOS 應用，提供語音輸入、
 ```markdown
 # Invisible Travel - 盲人出行智能助手
 
-![无障碍出行示意图](建议补充高对比度界面截图路径) <!-- 建议添加实际无障碍界面截图 -->
+![無障礙出行示意圖](建議補充高對比度界面截圖路徑) <!-- 建議添加實際無障礙界面截圖 -->
 
-## 🌐 项目愿景
-**触觉导航伴侣**专为视障人士设计的全方位出行辅助工具，整合六大核心感知系统：
+## 🌐 項目願景
+**觸覺導航伴侶**專為視障人士設計的全方位出行輔助工具，整合六大核心感知系統：
 
 ```mermaid
 graph TD
-    A[核心系统] --> B[智能避障导航]
-    A --> C[实时环境解析]
-    A --> D[多模态交互]
-    B --> B1[3米障碍预警]
-    B --> B2[地形特征识别]
-    C --> C1[公共交通播报]
-    C --> C2[气象安全提醒]
-    D --> D1[骨传导语音]
-    D --> D2[触觉反馈]
-    D --> D3[手势控制]
+    A[核心系統] --> B[智能避障導航]
+    A --> C[實時環境解析]
+    A --> D[多模態交互]
+    B --> B1[3米障礙預警]
+    B --> B2[地形特徵識別]
+    C --> C1[公共交通播報]
+    C --> C2[氣象安全提醒]
+    D --> D1[骨傳導語音]
+    D --> D2[觸覺反饋]
+    D --> D3[手勢控制]
 ```
 
-## 🦯 关键技术架构
-### 无障碍系统设计
+## 🦯 關鍵技術架構
+### 無障礙系統設計
 ```mermaid
 graph LR
-    F[感知层] --> G[硬件交互]
-    F --> H[环境解析]
+    F[感知層] --> G[硬件交互]
+    F --> H[環境解析]
     G --> G1[智能盲杖BLE]
-    G --> G2[触觉反馈设备]
-    H --> H1[立体声雷达]
+    G --> G2[觸覺反饋設備]
+    H --> H1[立體聲雷達]
     H --> H2[OpenStreetMap]
   
-    I[交互层] --> J[语音合成]
-    I --> K[手势识别]
-    J --> J1[动态语速调节]
-    K --> K1[三指滑动控制]
+    I[交互層] --> J[語音合成]
+    I --> K[手勢識別]
+    J --> J1[動態語速調節]
+    K --> K1[三指滑動控制]
   
-    L[安全层] --> M[紧急求助]
-    L --> N[偏离预警]
+    L[安全層] --> M[緊急求助]
+    L --> N[偏離預警]
 ```
 
-### 无障碍技术栈
+### 無障礙技術棧
 ```swift
 struct AccessibilityTech {
     let coreServices = ["CoreBluetooth", "AVSpeechSynthesis", "CoreMotion"]
-    let navComponents = ["ARKit障碍检测", "ML声音识别", "触觉编码协议"]
-    let uiSpec = ["WCAG 2.1 AA", "动态字体缩放", "语音优先设计"]
+    let navComponents = ["ARKit障礙檢測", "ML聲音識別", "觸覺編碼協議"]
+    let uiSpec = ["WCAG 2.1 AA", "動態字體縮放", "語音優先設計"]
 }
 ```
 
-## 🎧 核心功能模块
-### 智能盲杖连接系统（BLECore.swift）
+## 🎧 核心功能模塊
+### 智能盲杖連接系統（BLECore.swift）
 ```mermaid
 classDiagram
     class BlindStickManager {
@@ -83,39 +83,39 @@ classDiagram
         +sendVibrationPattern()
     }
   
-    BlindStickManager "1" *-- "2" BrailleDevice: 双通道触觉反馈
+    BlindStickManager "1" *-- "2" BrailleDevice: 雙通道觸覺反饋
 ```
 
-#### 触觉编码协议
+#### 觸覺編碼協議
 ```swift
 enum TerrainPattern: Int, CaseIterable {
-    case flatGround = 0    // 持续震动
-    case stairsUp = 1      // 短-长脉冲
-    case obstacle = 2      // 三连急促震动
-    case crosswalk = 3     // 交替左右震动
+    case flatGround = 0    // 持續震動
+    case stairsUp = 1      // 短-長脈衝
+    case obstacle = 2      // 三連急促震動
+    case crosswalk = 3     // 交替左右震動
 }
 ```
 
-### 语音导航界面（ContentView.swift）
-#### 无障碍交互流程
+### 語音導航界面（ContentView.swift）
+#### 無障礙交互流程
 ```mermaid
 graph TB
     Home --> |三指下滑| NavigationMode
-    Home --> |双指长按| Settings
-    NavigationMode --> |实时语音| RouteGuidance
-    RouteGuidance --> |障碍物距离| HapticFeedback
-    Settings --> |语音描述| ContrastAdjust
+    Home --> |雙指長按| Settings
+    NavigationMode --> |實時語音| RouteGuidance
+    RouteGuidance --> |障礙物距離| HapticFeedback
+    Settings --> |語音描述| ContrastAdjust
 ```
 
-#### 语音指令系统
+#### 語音指令系統
 ```swift
 struct VoiceCommand: View {
     @EnvironmentObject var navEngine: NavigationEngine
   
     var body: some View {
         Button(action: startNavigation) {
-            Text("开始导航")
-                .accessibilityHint("双指双击激活，长按取消")
+            Text("開始導航")
+                .accessibilityHint("雙指雙擊激活，長按取消")
                 .accessibilityAction(.magicTap) {
                     navEngine.repeatLastInstruction()
                 }
@@ -124,14 +124,14 @@ struct VoiceCommand: View {
 }
 ```
 
-## 🚦 安全与无障碍设计
-### 关键安全机制
+## 🚦 安全與無障礙設計
+### 關鍵安全機制
 ```markdown
-1. **紧急制动协议**
-   - 盲杖剧烈晃动触发SOS
-   - 自动发送定位至紧急联系人
+1. **緊急制動協議**
+   - 盲杖劇烈晃動觸發SOS
+   - 自動發送定位至緊急聯繫人
 
-2. **路径偏离预警**
+2. **路徑偏離預警**
    ```swift
    func checkDeviation(from route: Route) {
        if location.distance > 5.meters {
@@ -141,12 +141,12 @@ struct VoiceCommand: View {
    }
    ```
 
-3. **环境感知增强**
-   - 3D音效标记兴趣点
-   - 气味传感器集成（开发中）
+3. **環境感知增強**
+   - 3D音效標記興趣點
+   - 氣味傳感器集成（開發中）
 ```
 
-### 无障碍UI规范
+### 無障礙UI規範
 ```swift
 struct AccessibilityButton: View {
     let title: String
@@ -156,7 +156,7 @@ struct AccessibilityButton: View {
         Text(title)
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isButton)
-            .accessibilityLabel("\(title)，当前状态：\(isActive ? "启用" : "关闭")")
+            .accessibilityLabel("\(title)，當前狀態：\(isActive ? "啓用" : "關閉")")
             .accessibilityAction {
                 isActive.toggle()
             }
@@ -164,41 +164,41 @@ struct AccessibilityButton: View {
 }
 ```
 
-## 📱 安装与适配
-### 设备兼容性
+## 📱 安裝與適配
+### 設備兼容性
 ```markdown
-| 设备类型       | 触觉支持          | 语音优化 |
+| 設備類型       | 觸覺支持          | 語音優化 |
 |---------------|-------------------|----------|
-| iPhone 15 Pro | 压感触控          | 空间音频 |
-| Apple Watch   | Taptic Engine     | 腕部震动 |
-| AirPods Pro   | 动态头部追踪      | 环境降噪 |
+| iPhone 15 Pro | 壓感觸控          | 空間音頻 |
+| Apple Watch   | Taptic Engine     | 腕部震動 |
+| AirPods Pro   | 動態頭部追蹤      | 環境降噪 |
 ```
 
-### 用户引导流程
+### 用戶引導流程
 ```mermaid
 sequenceDiagram
-    用户->>应用: 三指长按启动
-    应用-->>用户: 震动确认
-    用户->>应用: 语音输入目的地
-    应用-->>服务器: 获取无障碍路径
-    服务器-->>应用: 结构化导航数据
-    应用->>用户: 分段语音指引
+    用戶->>應用: 三指長按啓動
+    應用-->>用戶: 震動確認
+    用戶->>應用: 語音輸入目的地
+    應用-->>服務器: 獲取無障礙路徑
+    服務器-->>應用: 結構化導航數據
+    應用->>用戶: 分段語音指引
     loop 每20米
-        应用-->>用户: 触觉路线确认
+        應用-->>用戶: 觸覺路線確認
     end
 ```
 
-## 🌟 技术突破
-1. **多模态反馈融合**
+## 🌟 技術突破
+1. **多模態反饋融合**
    ```swift
    func navigate() {
-       speechSynthesizer.speak("前方5米右转")
+       speechSynthesizer.speak("前方5米右轉")
        hapticEngine.play(.rightTurnPattern)
        updateBrailleDisplay("→ 5m")
    }
    ```
 
-2. **实时环境建模**
+2. **實時環境建模**
    ```swift
    ARKitScene.processScene { anchor in
        if anchor.isObstacle {
@@ -207,7 +207,7 @@ sequenceDiagram
    }
    ```
 
-3. **智能学习路径**
+3. **智能學習路徑**
    ```swift
    MLModel.predictRoute(preferences: 
        AccessibilityPreference(
@@ -217,56 +217,56 @@ sequenceDiagram
    )
    ```
 
-## 🤝 参与贡献指南
+## 🤝 參與貢獻指南
 ```markdown
-我们特别欢迎视障开发者的参与：
-1. 无障碍测试：申请TestFlight体验版
-2. 语音交互设计：提交语音指令方案
-3. 触觉编码研究：设计新的震动模式
+我們特別歡迎視障開發者的參與：
+1. 無障礙測試：申請TestFlight體驗版
+2. 語音交互設計：提交語音指令方案
+3. 觸覺編碼研究：設計新的震動模式
 
-提交issue时请注明：
-- 使用环境（室内/户外）
-- 辅助设备型号
-- 遇到的具体障碍类型
+提交issue時請注明：
+- 使用環境（室內/戶外）
+- 輔助設備型號
+- 遇到的具體障礙類型
 ```
 
-> 重要提示：本应用遵循W3C WAI-ARIA标准，所有功能均可通过VoiceOver全流程操作
+> 重要提示：本應用遵循W3C WAI-ARIA標準，所有功能均可通過VoiceOver全流程操作
 
 ```
 
-### 补充增强建议：
-1. **情景模拟测试数据**
+### 補充增強建議：
+1. **情景模擬測試數據**
 ```swift
 struct NavigationTestCase {
     let environment: [String] 
-    // ["雨天人行道", "地铁换乘通道", "施工路段"]
+    // ["雨天人行道", "地鐵換乘通道", "施工路段"]
   
     let expectedFeedback: [FeedbackType]
-    // [.vibration(3), .audio("前方施工"), .braille("左转")]
+    // [.vibration(3), .audio("前方施工"), .braille("左轉")]
 }
 ```
 
-2. **社区支持计划**
+2. **社區支持計劃**
 ```markdown
-## ♿ 盲人测试者支持
-我们提供：
-- 免费硬件租借（智能盲杖、触觉手环）
-- 一对一语音指导
-- 交通补助金申请
+## ♿ 盲人測試者支持
+我們提供：
+- 免費硬件租借（智能盲杖、觸覺手環）
+- 一對一語音指導
+- 交通補助金申請
 
-申请方式：通过issues提交测试申请
+申請方式：通過issues提交測試申請
 ```
 
-3. **隐私保护白皮书**
+3. **隱私保護白皮書**
 ```markdown
-### 数据安全架构
+### 數據安全架構
 ┌─────────────┐     ┌─────────────┐
-│ 本地处理    │<───>│ 安全加密存储│
+│ 本地處理    │<───>│ 安全加密存儲│
 └─────────────┘     └─────────────┘
        △                 △
-       │TEE加密          │生物认证
+       │TEE加密          │生物認證
 ┌─────────────┐     ┌─────────────┐
-│ 传感器数据  │     │ 导航路径    │
+│ 傳感器數據  │     │ 導航路徑    │
 └─────────────┘     └─────────────┘
 ```
 
