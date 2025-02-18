@@ -489,19 +489,6 @@ struct ConnectionStatusIndicator: View {
 }
 
 
-// MARK: - Device Filter Engine
-final class DeviceFilterEngine {
-    /// Regular expression pattern for audio device name matching
-    private let namePattern = "(?i)audio|headset"
-    
-    /// Applies name filtering using predefined regex pattern
-    /// - Parameter name: Device name to validate
-    /// - Returns: Boolean indicating name match status
-    func applyNameFilter(_ name: String) -> Bool {
-        return name.range(of: namePattern, options: .regularExpression) != nil
-    }
-}
-
 // MARK: - Scan Scheduler
 final class ScanScheduler {
     /// Scan interval in seconds
@@ -555,15 +542,14 @@ extension BluetoothManager {
     /// Processes discovered peripherals with enhanced filtering
     func enhancedProcessDiscoveredPeripheral(
         _ peripheral: CBPeripheral,
-        rssi: NSNumber,
-        filterEngine: DeviceFilterEngine
+        rssi: NSNumber
     ) {
         guard let deviceName = peripheral.name else { return }
         
-        let isValidName = filterEngine.applyNameFilter(deviceName)
+
         let isValidRSSI = rssi.intValue >= -100
         
-        if isValidName && isValidRSSI {
+        if isValidRSSI {
             processDiscoveredPeripheral(peripheral, rssi: rssi)
         }
     }
