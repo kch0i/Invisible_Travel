@@ -23,13 +23,14 @@ enum ConnectionState: Int {
 }
 
 // MARK: - Bluetooth device data model
-class BluetoothDevice: Identifiable {
+class BluetoothDevice: ObservableObject, Identifiable, Equatable {
     let id: UUID
     weak var peripheral: CBPeripheral?
     var name: String
     var rssi: Int
-    var state: ConnectionState
+    @Published var state: ConnectionState
     var lastConnectionAttempt: Date?  // Connection time tracking
+    
     
     init(peripheral: CBPeripheral, rssi: Int) {
         self.id = peripheral.identifier
@@ -38,6 +39,11 @@ class BluetoothDevice: Identifiable {
         self.rssi = rssi
         self.state = .disconnected
     }
+    
+    static func == (lhs: BluetoothDevice, rhs: BluetoothDevice) -> Bool {
+        lhs.id == rhs.id && lhs.state == rhs.state
+    }
+    
 }
 
 // MARK: - Bluetooth Core Manager
@@ -47,6 +53,8 @@ class BluetoothManager: NSObject, ObservableObject {
     @Published var discoveredDevices: [BluetoothDevice] = []
     @Published var isScanning: Bool = false
     @Published var authorizationStatus: CBManagerAuthorization = .notDetermined
+    // Track currently connected device
+    @Published var currentConnectedDevice: BluetoothDevice?
     
     // Bluetooth core components
     private var centralManager: CBCentralManager!
@@ -253,7 +261,8 @@ private extension BluetoothManager {
     func updateDeviceState(_ peripheral: CBPeripheral, state: ConnectionState) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self,
-                  let index = self.discoveredDevices.firstIndex(where: { $0.id == peripheral.identifier }) else { return }
+                  let index = self.discoveredDevices.firstIndex(where: { $0.id == peripheral.identifier })
+            else { return }
             
             self.discoveredDevices[index].state = state
             self.discoveredDevices[index].lastConnectionAttempt = (state == .connecting) ? Date() : nil
@@ -701,3 +710,170 @@ final class BLECoreCoordinator: BluetoothManagerDelegate {
     }
 }
 
+// MARK: - Enhanced Status Header
+struct EnhancedStatusHeader: View {
+    @ObservedObject var manager: BluetoothManager
+    
+    var body: some View {
+        HStack {
+            // Connected device display
+            if let connectedDevice = manager.currentConnectedDevice {
+                HStack {
+                    Image(systemName: "headphones.circle")
+                    Text(connectedDevice.name)
+                        .font(.subheadline)
+                }
+                .transition(.opacity)
+            } else {
+                // Scanning status indicator
+                HStack {
+                    Image(systemName: "wave.3.right.circle")
+                        .foregroundColor(manager.isScanning ? .blue : .gray)
+                    Text(manager.isScanning ? "Scanning..." : "Ready to connect")
+                        .font(.subheadline)
+                }
+            }
+        }
+        .animation(.easeInOut, value: manager.currentConnectedDevice)
+    }
+}
+
+// MARK: - Enhanced Device List
+struct EnhancedDeviceList: View {
+    @ObservedObject var manager: BluetoothManager
+    
+    var body: some View {
+        List {
+            ForEach(manager.discoveredDevices) { device in
+                HStack(spacing: 12) {
+                    // Signal strength visualization
+                    SignalStrengthIcon(rssi: device.rssi)
+                    
+                    // Device information stack
+                    VStack(alignment: .leading) {
+                        Text(device.name)
+                            .font(.body)
+                            .lineLimit(1)
+                        Text("\(device.rssi) dBm")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                    
+                    Spacer()
+                    
+                    // Connection status indicator
+                    ConnectionStatusIndicator(state: device.state)
+                    
+                    // Dynamic connection button
+                    ConnectionButton(device: device, manager: manager)
+                }
+                .padding(.vertical, 8)
+                .contextMenu {
+                    Button("Forget Device") {
+                        manager.removeDevice(device)
+                    }
+                }
+            }
+        }
+        .listStyle(.plain)
+    }
+}
+
+// MARK: - Connection Button Component
+struct ConnectionButton: View {
+    @ObservedObject var device: BluetoothDevice
+    @ObservedObject var manager: BluetoothManager
+    
+    var body: some View {
+            Button(action: handleConnection) {
+                Text(buttonTitle)
+                    .font(.callout)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(buttonColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                    .disabled(isDisabled)
+            }
+            .buttonStyle(.plain)
+        }
+
+    
+    private var buttonTitle: String {
+        switch device.state {
+        case .connected: return "Disconnect"
+        case .connecting: return "Connecting..."
+        default: return "Connect"
+        }
+    }
+    
+    private var buttonColor: Color {
+        switch device.state {
+        case .connected: return .red
+        case .connecting: return .orange
+        default: return .blue
+        }
+    }
+    
+    private var isDisabled: Bool {
+        device.state == ConnectionState.connecting
+    }
+    
+    private func handleConnection() {
+        manager.toggleConnection(for: device)
+    }
+}
+
+// MARK: - Enhanced Control Panel
+struct EnhancedControlPanel: View {
+    @ObservedObject var manager: BluetoothManager
+    
+    var body: some View {
+        HStack(spacing: 20) {
+            // Scan mode toggle
+            Button(action: toggleScan) {
+                Label(
+                    manager.isScanning ? "Stop Scan" : "Start Scan",
+                    systemImage: manager.isScanning ? "stop.circle" : "arrow.clockwise"
+                )
+                .padding(10)
+                .background(manager.isScanning ? Color.red : Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(8)
+            }
+            
+            // Emergency disconnect all
+            Button(action: disconnectAll) {
+                Label("Disconnect All", systemImage: "xmark.circle")
+                    .padding(10)
+                    .background(Color.red)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+            }
+        }
+    }
+    
+    private func toggleScan() {
+        manager.isScanning ? manager.stopScan() : manager.startScan()
+    }
+    
+    private func disconnectAll() {
+        manager.discoveredDevices.forEach { device in
+            if device.state != .disconnected {
+                manager.toggleConnection(for: device)
+            }
+        }
+    }
+}
+
+// MARK: - Bluetooth Manager Extension
+extension BluetoothManager {
+
+    
+    /// Remove device from discovered list
+    func removeDevice(_ device: BluetoothDevice) {
+        DispatchQueue.main.async { [weak self] in
+            self?.discoveredDevices.removeAll { $0.id == device.id }
+        }
+    }
+}
