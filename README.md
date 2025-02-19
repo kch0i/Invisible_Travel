@@ -16,7 +16,7 @@ BlindApp 是一款專為視障人士設計的 iOS 應用，提供語音輸入、
 
 
 
-```markdown
+markdown
 # Invisible Travel - 盲人出行智能助手
 
 ![無障礙出行示意圖](建議補充高對比度界面截圖路徑) <!-- 建議添加實際無障礙界面截圖 -->
@@ -126,7 +126,7 @@ struct VoiceCommand: View {
 
 ## 🚦 安全與無障礙設計
 ### 關鍵安全機制
-```markdown
+markdown
 1. **緊急制動協議**
    - 盲杖劇烈晃動觸發SOS
    - 自動發送定位至緊急聯繫人
@@ -144,7 +144,7 @@ struct VoiceCommand: View {
 3. **環境感知增強**
    - 3D音效標記興趣點
    - 氣味傳感器集成（開發中）
-```
+
 
 ### 無障礙UI規範
 ```swift
@@ -164,50 +164,10 @@ struct AccessibilityButton: View {
 }
 ```
 
-## 📱 安裝與適配
-### 設備兼容性
-```markdown
-| 設備類型       | 觸覺支持          | 語音優化 |
-|---------------|-------------------|----------|
-| iPhone 15 Pro | 壓感觸控          | 空間音頻 |
-| Apple Watch   | Taptic Engine     | 腕部震動 |
-| AirPods Pro   | 動態頭部追蹤      | 環境降噪 |
-```
 
-### 用戶引導流程
-```mermaid
-sequenceDiagram
-    用戶->>應用: 三指長按啓動
-    應用-->>用戶: 震動確認
-    用戶->>應用: 語音輸入目的地
-    應用-->>服務器: 獲取無障礙路徑
-    服務器-->>應用: 結構化導航數據
-    應用->>用戶: 分段語音指引
-    loop 每20米
-        應用-->>用戶: 觸覺路線確認
-    end
-```
 
-## 🌟 技術突破
-1. **多模態反饋融合**
-   ```swift
-   func navigate() {
-       speechSynthesizer.speak("前方5米右轉")
-       hapticEngine.play(.rightTurnPattern)
-       updateBrailleDisplay("→ 5m")
-   }
-   ```
-
-2. **實時環境建模**
-   ```swift
-   ARKitScene.processScene { anchor in
-       if anchor.isObstacle {
-           obstacleDetector.register(anchor)
-       }
-   }
-   ```
-
-3. **智能學習路徑**
+## 🌟 技術
+1. **智能學習路徑**
    ```swift
    MLModel.predictRoute(preferences: 
        AccessibilityPreference(
@@ -216,58 +176,4 @@ sequenceDiagram
        )
    )
    ```
-
-## 🤝 參與貢獻指南
-```markdown
-我們特別歡迎視障開發者的參與：
-1. 無障礙測試：申請TestFlight體驗版
-2. 語音交互設計：提交語音指令方案
-3. 觸覺編碼研究：設計新的震動模式
-
-提交issue時請注明：
-- 使用環境（室內/戶外）
-- 輔助設備型號
-- 遇到的具體障礙類型
-```
-
-> 重要提示：本應用遵循W3C WAI-ARIA標準，所有功能均可通過VoiceOver全流程操作
-
-```
-
-### 補充增強建議：
-1. **情景模擬測試數據**
-```swift
-struct NavigationTestCase {
-    let environment: [String] 
-    // ["雨天人行道", "地鐵換乘通道", "施工路段"]
-  
-    let expectedFeedback: [FeedbackType]
-    // [.vibration(3), .audio("前方施工"), .braille("左轉")]
-}
-```
-
-2. **社區支持計劃**
-```markdown
-## ♿ 盲人測試者支持
-我們提供：
-- 免費硬件租借（智能盲杖、觸覺手環）
-- 一對一語音指導
-- 交通補助金申請
-
-申請方式：通過issues提交測試申請
-```
-
-3. **隱私保護白皮書**
-```markdown
-### 數據安全架構
-┌─────────────┐     ┌─────────────┐
-│ 本地處理    │<───>│ 安全加密存儲│
-└─────────────┘     └─────────────┘
-       △                 △
-       │TEE加密          │生物認證
-┌─────────────┐     ┌─────────────┐
-│ 傳感器數據  │     │ 導航路徑    │
-└─────────────┘     └─────────────┘
-```
-
 

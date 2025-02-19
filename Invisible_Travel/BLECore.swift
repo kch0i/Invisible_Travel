@@ -147,7 +147,7 @@ extension BluetoothManager: CBPeripheralDelegate {
 // MARK: - private method extension
 private extension BluetoothManager {
     func initializeCentralManager() {
-        let options: [String: Any] = [
+        let _: [String: Any] = [
             CBCentralManagerOptionShowPowerAlertKey: false,
             CBCentralManagerOptionRestoreIdentifierKey: "com.yourcompany.InvisibleTravel"
         ]
@@ -553,7 +553,7 @@ extension BluetoothManager {
         _ peripheral: CBPeripheral,
         rssi: NSNumber
     ) {
-        guard let deviceName = peripheral.name else { return }
+        guard peripheral.name != nil else { return }
         
 
         let isValidRSSI = rssi.intValue >= -100
